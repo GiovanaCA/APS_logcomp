@@ -8,7 +8,7 @@ A linguagem de programação criada é para movimentar a garra de um robô, para
 
 ## EBNF
 
-- STATEMENT = { IDENTIFICADOR | MOSTRAR | SE | ENQUANTO } ;
+- DECLARACAO = { IDENTIFICADOR | MOSTRAR | SE | ENQUANTO } ;
 - IDENTIFICADOR = ID, "=", EXPRESSAO ;
 - INSERIR = "inserir", "(", ")" ;
 - MOSTRAR = "mostrar", "(", EXPRESSAO, ")" ;
