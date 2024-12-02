@@ -39,9 +39,8 @@ class Tokenizer:
                 self.position += 1
             self.next = Token("NUMBER", value)
 
-        # Operadores Lógicos (incluindo '&&' e '||')
+        # Operadores Lógicos
         elif any(current_char == op[0] for op in LOGICAL_OPERATORS):
-            # Verifica operadores de múltiplos caracteres como '&&' e '||'
             if self.source.startswith('&&', self.position):
                 self.next = Token("LOGICAL_OPERATOR", '&&')
                 self.position += 2
@@ -60,9 +59,8 @@ class Tokenizer:
             self.position += 1
             self.next = token
 
-        # Operadores Relacionais (incluindo '<=', '>=', '==', '!=')
+        # Operadores Relacionais
         elif current_char in RELATIONAL_OPERATORS:
-            # Verifica operadores de múltiplos caracteres como '<=', '>=', '==', '!='
             if self.source.startswith('<=', self.position):
                 self.next = Token("RELATIONAL_OPERATOR", '<=')
                 self.position += 2
@@ -81,7 +79,7 @@ class Tokenizer:
             else:
                 raise ValueError(f"Operador relacional inválido em posição {self.position}: '{current_char}'")
 
-        # Prioridades (parênteses e chaves)
+        # Prioridades
         elif current_char in PRIORITIES:
             token = Token("PRIORITY", current_char)
             self.position += 1
@@ -127,17 +125,13 @@ class Tokenizer:
             self.position += 1
             self.next = Token("EOL", ";")
 
+        elif current_char == ':':
+            self.position += 1
+            self.next = Token("COLON", ":")
+
         elif current_char == ',':
             self.position += 1
             self.next = Token("COMMA", ",")
-
-        elif current_char == '{':
-            self.position += 1
-            self.next = Token("BLOCK_OPEN", "{")
-
-        elif current_char == '}':
-            self.position += 1
-            self.next = Token("BLOCK_CLOSE", "}")
 
         elif current_char == '(':
             self.position += 1

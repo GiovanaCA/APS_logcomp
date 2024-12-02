@@ -1,19 +1,20 @@
-# Definições Atualizadas de Constantes
+# Definições de Símbolos
 
 NUMBERS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-MATHEMATICAL_OPERATORS = ['+', '-', '*', '/']  # Corrigido de 'MATEHATICAL_OPERATORS'
+MATHEMATICAL_OPERATORS = ['+', '-', '*', '/']
 LOGICAL_OPERATORS = ['&&', '||', '!']
-RELATIONAL_OPERATORS = ['<', '>', '==', '<=', '>=']  # Adicionados '<=' e '>='
-SYMBOLS = ['=', ';']
+RELATIONAL_OPERATORS = ['<', '>', '==', '<=', '>=', '!=']
+SYMBOLS = ['=', ';', ':']
 PRIORITIES = ['(', ')']
-BLOCKS = ['{', '}']
 RESERVED_WORDS = {
-    'printf': 'PRINTF',
-    'if': 'IF',
-    'else': 'ELSE',
-    'while': 'WHILE',
-    'scanf': 'SCANF',
-    'return': 'RETURN',
+    'mostrar': 'MOSTRAR',
+    'movimentar': 'MOVIMENTAR',
+    'abrir': 'ABRIR',
+    'fechar': 'FECHAR',
+    'SE': 'SE',
+    'CONTRARIO': 'CONTRARIO',
+    'ENQUANTO': 'ENQUANTO',
+    'FIM': 'FIM',
 }
-TYPES = ['int', 'str', 'bool', 'void']
+TYPES = ['var', 'Robo']
 BOOLEAN_VALUES = ['true', 'false']

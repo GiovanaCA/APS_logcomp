@@ -1,11 +1,14 @@
-int soma(int x) {
+// Inicialização do robô
+Robo rob1 = Robo("rob1");
 
-    if (x < 3) {
-      printf(x);
-      soma(x+1);
-    }
-  }
-  
-void main() {
-soma(1);
-}
+// Declaração de variável
+var contador = 3;
+
+// Loop para movimentar o robô
+ENQUANTO (contador > 0):
+    rob1.movimentar(10);
+    contador = contador - 1;
+FIM ENQUANTO;
+
+// Mostrar o valor de contador
+mostrar(contador);
