@@ -16,5 +16,5 @@ RESERVED_WORDS = {
     'ENQUANTO': 'ENQUANTO',
     'FIM': 'FIM',
 }
-TYPES = ['var', 'Robo']
+TYPES = ['str', 'bool', 'int', 'Robo']
 BOOLEAN_VALUES = ['true', 'false']

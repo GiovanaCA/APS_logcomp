@@ -2,7 +2,7 @@
 Robo rob1 = Robo("rob1");
 
 // Declaração de variável
-var contador = 3;
+int contador = 3;
 
 // Loop para movimentar o robô
 ENQUANTO (contador > 0):

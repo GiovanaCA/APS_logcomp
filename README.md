@@ -4,7 +4,7 @@ Alunos: Giovana Cassoni Andrade e Tales Ivalque Taveira de Freitas
 
 ## LINGUAGEM
 
-A linguagem de programação criada é para movimentar a garra de um robô, para abrir e fechar, pegando e soltando objetos.
+A linguagem de programação criada é para movimentar, abrir e fechar a garra de um robô.
 
 ## EBNF
 
@@ -30,7 +30,13 @@ A linguagem de programação criada é para movimentar a garra de um robô, para
   - `| "fechar", "(", ID, ",", EXPRESSAO, ")", ";"`
 
 - **CONTROLE**
-  - `CONTROLE ::= ENQUANTO`
+  - `CONTROLE ::= ENQUANTO | SE`
+
+- **SE**
+  - `SE ::= "SE", "(", EXPRESSAO, ")", ":", { DECLARACAO }, "FIM", "SE", [ CONTRARIO ]`
+
+- **CONTRARIO**
+  - `CONTRARIO ::= "CONTRARIO", ":", { DECLARACAO }, "FIM", "CONTRARIO"`
 
 - **ENQUANTO**
   - `ENQUANTO ::= "ENQUANTO", "(", EXPRESSAO, ")", ":", { DECLARACAO }, "FIM", "ENQUANTO", ";"`
@@ -59,6 +65,9 @@ A linguagem de programação criada é para movimentar a garra de um robô, para
 - **STRING**
   - `STRING ::= '"', { CARACTERE }, '"'`
 
+- **COMENTARIO**
+  - `COMENTARIO ::= "//", { CARACTERE }, "\n"`
+
 - **CARACTERE**
   - `CARACTERE ::= LETRA | DIGITO | SIMBOLO`
 
@@ -79,12 +88,6 @@ A linguagem de programação criada é para movimentar a garra de um robô, para
   - `           "\\" | ":" | ";" | "'" | "\"" | "," | "." | "/" |`
   - `           "<" | ">" | "?" | " " | "\t"`
 
-- **COMENTARIO**
-  - `COMENTARIO ::= "//", { ANY_CARACTERE }, "\n"`
-
-- **ANY_CARACTERE**
-  - `ANY_CARACTERE ::= LETRA | DIGITO | SIMBOLO`
-
 ## EXEMPLOS DE ENTRADA
 
 - entrada 1:
@@ -94,7 +97,7 @@ A linguagem de programação criada é para movimentar a garra de um robô, para
 Robo rob1 = Robo("rob1");
 
 // Declaração de variável
-var contador = 3;
+int contador = 3;
 
 // Loop para movimentar o robô
 ENQUANTO (contador > 0):
@@ -113,7 +116,7 @@ mostrar(contador);
 Robo rob1 = Robo("rob1");
 
 // Declaração de variável
-var contador = 3;
+int contador = 3;
 
 // Loop para movimentar o robô
 ENQUANTO (contador > 0):
