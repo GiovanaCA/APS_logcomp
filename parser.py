@@ -1,5 +1,5 @@
 from tokenizer import Tokenizer
-from nodes import BlockNode, BinOp, UnOp, IntVal, NoOp, Assign, Id, PrintNode, IfNode, WhileNode, ScanNode, VarDec, StrVal, FuncCall, FuncDec
+from nodes import BlockNode, BinOp, UnOp, IntVal, NoOp, Assign, Id, MostrarNode, SeNode, EnquantoNode, VarDec, StrVal, FuncCall, FuncDec, AbrirNode, FecharNode, MovimentarNode
 from preprocessor import PrePro
 
 class Parser:
@@ -17,9 +17,7 @@ class Parser:
             else:
                 func_dec = Parser.parseFunction()
                 program.children.append(func_dec)
-
         program.children.append(FuncCall('main'))
-
         return program
     
     @staticmethod
@@ -34,7 +32,6 @@ class Parser:
             Parser.tokenizer.select_next()
             if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
                 Parser.tokenizer.select_next()
-                
                 if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")":
                     Parser.tokenizer.select_next()
                 else:    
@@ -47,7 +44,6 @@ class Parser:
                                 new_var = Assign(var_name, None)
                                 parameters.append(VarDec(var_type, [new_var]))
                                 Parser.tokenizer.select_next()
-                                
                                 if Parser.tokenizer.next.type == "COMMA":
                                     Parser.tokenizer.select_next()
                                 elif Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")":
@@ -59,15 +55,12 @@ class Parser:
                                 raise ValueError("Erro de sintaxe na declaração de função")
                         else:
                             raise ValueError("Erro de sintaxe na declaração de função")
-                if Parser.tokenizer.next.type == "BLOCK_OPEN":
+                if Parser.tokenizer.next.type == "COLON":
                     block = Parser.parseBlock()
                     parameters.append(block)
                 else:
                     raise ValueError("Erro de sintaxe na declaração de função")
-                
-
                 return FuncDec(func_name, parameters)
-
             else:
                 raise ValueError("Erro de sintaxe na declaração de função")
 
@@ -76,16 +69,17 @@ class Parser:
         '''
         Recebe um bloco de código e retorna um nó do tipo BlockNode
         '''
-        if Parser.tokenizer.next.type == "BLOCK_OPEN":
+        if Parser.tokenizer.next.type == "COLON":
             Parser.tokenizer.select_next()
             block = BlockNode(None)
-            
-            while Parser.tokenizer.next.type != "BLOCK_CLOSE":
+            while Parser.tokenizer.next.type != "FIM":
                 block.children.append(Parser.parseStatement())
                 if Parser.tokenizer.next.type == "EOF":
                     raise ValueError("Bloco não fechado")
-                
-            Parser.tokenizer.select_next() # Pula o '}'
+            Parser.tokenizer.select_next() # Pula o 'FIM'
+            if Parser.tokenizer.next.type != "EOL":
+                raise ValueError("Bloco não fechado")
+            Parser.tokenizer.select_next() # Pula o ';'
             return block
         else:
             raise ValueError("Esperado '{' no início do bloco")
@@ -105,33 +99,40 @@ class Parser:
             Parser.tokenizer.select_next()
             if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
                 Parser.tokenizer.select_next()
-                expression = Parser.parseRelationalExpression()
+                expression = Parser.parseExpressao()
                 if Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
                     raise ValueError("Parênteses não fechados no return")
                 Parser.tokenizer.select_next()
                 return expression
         
-        elif Parser.tokenizer.next.type == "PRINTF":
-            print_node = Parser.parsePrintf()
+        elif Parser.tokenizer.next.type == "MOSTRAR":
+            print_node = Parser.parseMostrar()
             if Parser.tokenizer.next.type == "EOL":
                 Parser.tokenizer.select_next()
             else:
                 raise ValueError("Esperado ';' no final da linha")
             return print_node
         
-        elif Parser.tokenizer.next.type == "BLOCK_OPEN":
+        # elif Parser.tokenizer.next.type == "MOVIMENTAR":
+
+        # elif Parser.tokenizer.next.type == "ABRIR":
+
+        # elif Parser.tokenizer.next.type == "FECHAR":
+
+        elif Parser.tokenizer.next.type == "COLON":
             return Parser.parseBlock()
 
-        elif Parser.tokenizer.next.type == "IF":
-            return Parser.parseIf()
+        elif Parser.tokenizer.next.type == "SE":
+            return Parser.parseSe()
         
-        elif Parser.tokenizer.next.type == "WHILE":
-            return Parser.parseWhile()
+        elif Parser.tokenizer.next.type == "ENQUANTO":
+            return Parser.parseEnquanto()
         
         elif Parser.tokenizer.next.type == "EOL":
             Parser.tokenizer.select_next()
             return NoOp(None)
         
+        # IRÁ TER QUE TRATAR O TIPO ROBO
         elif Parser.tokenizer.next.type == "TYPE":  # Verifica se há uma declaração de tipo
             var_dec = Parser.parseVarDec()  # Chama o parseVarDec para tratar a declaração de variáveis
             if Parser.tokenizer.next.type == "EOL":
@@ -143,8 +144,6 @@ class Parser:
         else:
             raise ValueError("Declaração inválida")
         
-
-
     @staticmethod
     def parseAssignment():
         # Verifica se o próximo token é um identificador de variável
@@ -157,7 +156,7 @@ class Parser:
                 Parser.tokenizer.select_next()
 
                 # Avalia a expressão após o "="
-                expression = Parser.parseRelationalExpression()
+                expression = Parser.parseExpressao()
 
                 # Retorna um nó de atribuição (Assign) com o nome da variável e a expressão
                 return Assign(var_name, [expression])
@@ -165,7 +164,7 @@ class Parser:
                 Parser.tokenizer.select_next()
                 args = []
                 while Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
-                    args.append(Parser.parseRelationalExpression())
+                    args.append(Parser.parseExpressao())
                     if Parser.tokenizer.next.type == "COMMA":
                         Parser.tokenizer.select_next()
                     elif Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")":
@@ -180,144 +179,111 @@ class Parser:
         else:
             raise ValueError("Esperado identificador de variável")
 
-
     @staticmethod
     def parseVarDec():
         variables = []
         var_type = Parser.tokenizer.next.value
         Parser.tokenizer.select_next()
         if Parser.tokenizer.next.type == "ID":
-            
-
             while Parser.tokenizer.next.type == "ID":
                 var_name = Parser.tokenizer.next.value
                 Parser.tokenizer.select_next()
-
                 # Verifica se há atribuição durante a declaração
                 if Parser.tokenizer.next.type == "ASSIGN":
                     Parser.tokenizer.select_next()
-                    expression = Parser.parseRelationalExpression()
+                    expression = Parser.parseExpressao()
                     variables.append(Assign(var_name, [expression]))
                 else:
                     variables.append(Assign(var_name, None))  # Inicializa com valor padrão
-
                 if Parser.tokenizer.next.type == "COMMA":
                     Parser.tokenizer.select_next()
                 else:
                     break
-            
-            
             else:
                 raise ValueError("Erro de sintaxe na declaração de variáveis")
             return VarDec(var_type, variables)
         else:
             raise ValueError("Erro de sintaxe: Tipo de variável esperado")
 
-
     @staticmethod
-    def parsePrintf():
-        if Parser.tokenizer.next.type == "PRINTF":
+    def parseMostrar():
+        if Parser.tokenizer.next.type == "MOSTRAR":
             Parser.tokenizer.select_next()
-            
             if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
                 Parser.tokenizer.select_next()
-                expression = Parser.parseRelationalExpression()
-                
+                expression = Parser.parseExpressao()
                 if Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
-                    raise ValueError("Parênteses não fechados no printf")
-                
+                    raise ValueError("Parênteses não fechados no mostrar")
                 Parser.tokenizer.select_next()
-                return PrintNode(None, [expression])
+                return MostrarNode(None, [expression])
             else:
-                raise ValueError("Erro de sintaxe em printf")
+                raise ValueError("Erro de sintaxe em mostrar")
     
     @staticmethod
-    def parseIf():
+    def parseSe():
         Parser.tokenizer.select_next()
         if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
             Parser.tokenizer.select_next()           
-            condition = Parser.parseRelationalExpression()
-                
+            condition = Parser.parseExpressao()
             if Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
-                raise ValueError("Parênteses não fechados no if")
-            
+                raise ValueError("Parênteses não fechados no se")
             Parser.tokenizer.select_next()
-            
-            
             if_code = Parser.parseStatement()
-
-            if Parser.tokenizer.next.type == "ELSE":
+            if Parser.tokenizer.next.type == "CONTRARIO":
                 Parser.tokenizer.select_next()
-                
                 else_code = Parser.parseStatement()
             else:
                 else_code = NoOp(None)
-                
-            return IfNode(None, [condition, if_code, else_code])
+            return SeNode(None, [condition, if_code, else_code])
         else:
             raise ValueError("Erro de sintaxe no if")
 
     @staticmethod
-    def parseWhile():
+    def parseEnquanto():
         Parser.tokenizer.select_next()
         if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
             Parser.tokenizer.select_next()           
-            condition = Parser.parseRelationalExpression()
-                
+            condition = Parser.parseExpressao()
             if Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
                 raise ValueError("Parênteses não fechados no while")
-            
             Parser.tokenizer.select_next()
-            
-           
             code = Parser.parseStatement()
-            return WhileNode(None, [condition, code])
+            return EnquantoNode(None, [condition, code])
         else:
             raise ValueError("Erro de sintaxe no while")
 
     @staticmethod
-    def parseRelationalExpression():
-        result = Parser.parseExpression()
-
+    def parseExpressao():
+        result = Parser.parseEXP1()
         if Parser.tokenizer.next.type == "RELATIONAL_OPERATOR":
             operator = Parser.tokenizer.next.value
             Parser.tokenizer.select_next()
-
-            next_expression = Parser.parseExpression()
+            next_expression = Parser.parseEXP1()
             result = BinOp(operator, [result, next_expression])
-
         return result
 
     @staticmethod
-    def parseExpression():
-        result = Parser.parseTerm()
-
+    def parseEXP1():
+        result = Parser.parseEXP2()
         while (Parser.tokenizer.next.type == "MATHEMATICAL_OPERATOR" and Parser.tokenizer.next.value in ("+", "-")) or (Parser.tokenizer.next.type == "LOGICAL_OPERATOR" and Parser.tokenizer.next.value in ("||")):
             operator = Parser.tokenizer.next.value
             Parser.tokenizer.select_next()
-
-            next_term = Parser.parseTerm()
-
+            next_term = Parser.parseEXP2()
             result = BinOp(operator, [result, next_term])
-
         return result
 
     @staticmethod
-    def parseTerm():
-        result = Parser.parseFactor()
-
+    def parseEXP2():
+        result = Parser.parseEXP3()
         while (Parser.tokenizer.next.type == "MATHEMATICAL_OPERATOR" and Parser.tokenizer.next.value in ("*", "/")) or (Parser.tokenizer.next.type == "LOGICAL_OPERATOR" and Parser.tokenizer.next.value == "&&"):
             operator = Parser.tokenizer.next.value
             Parser.tokenizer.select_next()
-
-            next_factor = Parser.parseFactor()
-
+            next_factor = Parser.parseEXP3()
             result = BinOp(operator, [result, next_factor])
-
         return result
 
     @staticmethod
-    def parseFactor():
+    def parseEXP3():
         if Parser.tokenizer.next.type == "NUMBER":
             result = IntVal(Parser.tokenizer.next.value)
             Parser.tokenizer.select_next()
@@ -325,19 +291,19 @@ class Parser:
         
         elif Parser.tokenizer.next.type == "MATHEMATICAL_OPERATOR" and Parser.tokenizer.next.value == "-":
             Parser.tokenizer.select_next()
-            return UnOp("-", [Parser.parseFactor()])
+            return UnOp("-", [Parser.parseEXP3()])
         
         elif Parser.tokenizer.next.type == "MATHEMATICAL_OPERATOR" and Parser.tokenizer.next.value == "+":
             Parser.tokenizer.select_next()
-            return UnOp("+", [Parser.parseFactor()])
+            return UnOp("+", [Parser.parseEXP3()])
         
         elif Parser.tokenizer.next.type == "LOGICAL_OPERATOR" and Parser.tokenizer.next.value == "!":
             Parser.tokenizer.select_next()
-            return UnOp("!", [Parser.parseFactor()])
+            return UnOp("!", [Parser.parseEXP3()])
         
         elif Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
             Parser.tokenizer.select_next()
-            result = Parser.parseRelationalExpression()
+            result = Parser.parseExpressao()
 
             if Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
                 raise ValueError("Parênteses não fechados")
@@ -352,7 +318,7 @@ class Parser:
                 Parser.tokenizer.select_next()
                 args = []
                 while Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
-                    args.append(Parser.parseRelationalExpression())
+                    args.append(Parser.parseExpressao())
                     if Parser.tokenizer.next.type == "COMMA":
                         Parser.tokenizer.select_next()
                     elif Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")":
@@ -363,36 +329,22 @@ class Parser:
                 return FuncCall(name, args)
             else:
                 result = Id(name)
-                
                 return result
-        
+
         elif Parser.tokenizer.next.type == "STRING":
             result = StrVal(Parser.tokenizer.next.value)
             Parser.tokenizer.select_next()
             return result
-
-        elif Parser.tokenizer.next.type == "SCANF":
-            Parser.tokenizer.select_next()
-            if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
-                Parser.tokenizer.select_next()            
-                if Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
-                    raise ValueError("Parênteses não fechados no scanf")
-                Parser.tokenizer.select_next()
-                return ScanNode(None)
-            else:
-                raise ValueError("Erro de sintaxe no scanf")
+        
         else:
             raise ValueError("Fator inválido")
 
     @staticmethod
     def run(source: str):
         preprocessed_source = PrePro.filter(source)
-        
         Parser.tokenizer = Tokenizer(preprocessed_source)
         Parser.tokenizer.select_next()
         result = Parser.parseProgram()        
-
         if Parser.tokenizer.next.type != "EOF":
             raise ValueError("A expressão está mal formada")
-
         return result

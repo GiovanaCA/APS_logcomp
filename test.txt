@@ -1,14 +1,18 @@
-// Inicialização do robô
-Robo rob1 = Robo("rob1");
+void main():
+    // Inicialização do robô
+    // Robo rob1 = Robo("rob1");
 
-// Declaração de variável
-int contador = 3;
+    // Declaração de variável
+    int contador = 3;
+    mostrar(contador);
 
-// Loop para movimentar o robô
-ENQUANTO (contador > 0):
-    rob1.movimentar(10);
-    contador = contador - 1;
-FIM ENQUANTO;
+    // Loop para movimentar o robô
+    ENQUANTO (contador > 0):
+        // rob1.movimentar(10);
+        contador = contador - 1;
+    FIM;
 
-// Mostrar o valor de contador
-mostrar(contador);
+    // Mostrar o valor de contador
+    mostrar(contador);
+    return(0);
+FIM;

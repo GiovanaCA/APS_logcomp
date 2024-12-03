@@ -15,6 +15,7 @@ RESERVED_WORDS = {
     'CONTRARIO': 'CONTRARIO',
     'ENQUANTO': 'ENQUANTO',
     'FIM': 'FIM',
+    'return': 'RETURN',
 }
-TYPES = ['str', 'bool', 'int', 'Robo']
+TYPES = ['str', 'bool', 'int', 'void', 'Robo']
 BOOLEAN_VALUES = ['true', 'false']

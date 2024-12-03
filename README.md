@@ -18,7 +18,10 @@ A linguagem de programação criada é para movimentar, abrir e fechar a garra d
   - `OBJETO_DECLARACAO ::= "Robo", ID, "=", "Robo", "(", STRING, ")", ";"`
 
 - **VARIAVEL_DECLARACAO**
-  - `VARIAVEL_DECLARACAO ::= "var", ID, "=", EXPRESSAO, ";"`
+  - `VARIAVEL_DECLARACAO ::= VARIAVEIS, ID, "=", EXPRESSAO, ";"`
+
+- **VARIAVEIS**
+  - `VARIAVEIS ::= "void" | "int" | "bool" | "str"`
 
 - **ATRIBUICAO**
   - `ATRIBUICAO ::= ID, "=", EXPRESSAO, ";"`
@@ -28,30 +31,31 @@ A linguagem de programação criada é para movimentar, abrir e fechar a garra d
   - `| "mostrar", "(", EXPRESSAO, ")", ";"` 
   - `| "abrir", "(", ID, ")", ";"` 
   - `| "fechar", "(", ID, ",", EXPRESSAO, ")", ";"`
+  - `| "return", "(", EXPRESSAO, ")", ";"`
 
 - **CONTROLE**
   - `CONTROLE ::= ENQUANTO | SE`
 
 - **SE**
-  - `SE ::= "SE", "(", EXPRESSAO, ")", ":", { DECLARACAO }, "FIM", "SE", [ CONTRARIO ]`
+  - `SE ::= "SE", "(", EXPRESSAO, ")", ":", { DECLARACAO }, "FIM", ";", [ CONTRARIO ]`
 
 - **CONTRARIO**
-  - `CONTRARIO ::= "CONTRARIO", ":", { DECLARACAO }, "FIM", "CONTRARIO"`
+  - `CONTRARIO ::= "CONTRARIO", ":", { DECLARACAO }, "FIM", ";"`
 
 - **ENQUANTO**
-  - `ENQUANTO ::= "ENQUANTO", "(", EXPRESSAO, ")", ":", { DECLARACAO }, "FIM", "ENQUANTO", ";"`
+  - `ENQUANTO ::= "ENQUANTO", "(", EXPRESSAO, ")", ":", { DECLARACAO }, "FIM", ";"`
 
 - **EXPRESSAO**
   - `EXPRESSAO ::= EXP1, { ("==" | "<" | ">" | "<=" | ">=" | "!="), EXP1 }`
 
 - **EXP1**
-  - `EXP1 ::= EXP2, { ("+" | "-"), EXP2 }`
+  - `EXP1 ::= EXP2, { ("+" | "-" | "||"), EXP2 }`
 
 - **EXP2**
-  - `EXP2 ::= EXP3, { ("*" | "/"), EXP3 }`
+  - `EXP2 ::= EXP3, { ("*" | "/" | "&&"), EXP3 }`
 
 - **EXP3**
-  - `EXP3 ::= [ "-" ], ( NUMERO | STRING | "(", EXPRESSAO, ")" | ID, [ ARGUMENTOS ] )`
+  - `EXP3 ::= [ "-" | "+" | "!"], ( NUMERO | STRING | "(", EXPRESSAO, ")" | ID, [ ARGUMENTOS ] )`
 
 - **ARGUMENTOS**
   - `ARGUMENTOS ::= ",", EXPRESSAO, { ",", EXPRESSAO }`
@@ -103,7 +107,7 @@ int contador = 3;
 ENQUANTO (contador > 0):
     rob1.movimentar(10);
     contador = contador - 1;
-FIM ENQUANTO;
+FIM;
 
 // Mostrar o valor de contador
 mostrar(contador);
@@ -123,5 +127,5 @@ ENQUANTO (contador > 0):
     movimentar(rob1, 10);
     contador = contador - 1;
     mostrar(contador);
-FIM ENQUANTO;
+FIM;
 ```

@@ -1,8 +1,7 @@
 import sys
 from typing import List, Any
 from schemas import SymbolTable, Node, Token, FuncTable
-from nodes import BlockNode, BinOp, UnOp, IntVal, NoOp, Assign, Id, PrintNode
-
+from nodes import BlockNode, BinOp, UnOp, IntVal, NoOp, Assign, Id, MostrarNode
 
 from parser import Parser
 class SemanticAnalyzer:
@@ -33,10 +32,6 @@ if __name__ == '__main__':
             source = file.read()
     else:
         sys.stderr.write('Número de argumentos inválido: apenas 1 argumento é permitido\n')
-
     if not source:
         sys.stderr.write('Arquivo vazio\n')
-    
-    
     result = main(source)
-    
