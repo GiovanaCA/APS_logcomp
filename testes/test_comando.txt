@@ -1,0 +1,16 @@
+comando circulo(Robo robo, int raio, int angulo):
+    int i = 0;
+    ENQUANTO(i < angulo):
+        move_frente(robo, raio);
+        gira(robo, 1);
+        i = i + 1;
+        FIM;
+    FIM;
+
+int main():
+    Robo robo1 = Robo("RoboAlpha");
+    circulo(robo1, 10, 360);
+    mostrar(ver_x(robo1));
+    mostrar(ver_y(robo1));
+    mostrar(ver_angulo(robo1));
+    FIM;
