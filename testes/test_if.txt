@@ -1,4 +1,4 @@
-int main():
+void main():
     int x = 10;
     SE (x == 1):
         mostrar("x == 1");
@@ -6,4 +6,4 @@ int main():
     SENAO:
         mostrar("x != 1");
         FIM;
-FIM;
+    FIM;

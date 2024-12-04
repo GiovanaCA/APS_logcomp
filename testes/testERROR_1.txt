@@ -1,0 +1,12 @@
+// ERRO: Função 'comando' deve receber pelo menos um argumento do tipo 'Robo'
+comando circulo(int robo, int raio, int angulo):
+    int i = 0;
+    ENQUANTO(i < angulo):
+        i = i + 1;
+        FIM;
+    FIM;
+
+void main():
+    Robo robo1 = Robo("RoboAlpha");
+    circulo(20, 10, 30);
+    FIM;

@@ -1,4 +1,4 @@
-int main():
+void main():
     int x = 0;
     ENQUANTO(x < 10):
         mostrar(x);

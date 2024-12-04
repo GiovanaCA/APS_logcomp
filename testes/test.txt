@@ -1,8 +1,8 @@
 int soma(int a, int b):
     return(a + b);
-FIM;
+    FIM;
 
-int main():
+void main():
     Robo robo1 = Robo("RoboAlpha");
     int x = 10;
     int y = soma(x, 20);
@@ -13,4 +13,4 @@ int main():
     ver_y(robo1);
     ver_angulo(robo1);
     mostrar(ver_y(robo1));
-FIM;
+    FIM;

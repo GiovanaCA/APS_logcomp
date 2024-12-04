@@ -7,7 +7,7 @@ comando circulo(Robo robo, int raio, int angulo):
         FIM;
     FIM;
 
-int main():
+void main():
     Robo robo1 = Robo("RoboAlpha");
     circulo(robo1, 10, 360);
     mostrar(ver_x(robo1));
