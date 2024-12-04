@@ -4,7 +4,7 @@ Alunos: Giovana Cassoni Andrade e Tales Ivalque Taveira de Freitas
 
 ## LINGUAGEM
 
-A linguagem de programação criada é para operar um robô, movimentando-o para frente, trás, lados, girando, abrindo e fechando a garra, movimentando o braço do robô, e visualizando diversas informações referentes a ele.
+A linguagem de programação criada é para operar um robô, movimentando-o para frente, trás, lados, girando, abrindo e fechando a garra, movimentando o braço do robô, e visualizando diversas informações referentes a ele. A ideia dessa linguagem foi inspirada em uma disciplina passada na qual um robô deve realizar determinadas tarefas, e um código que facilite a execução seria muito beneficial para os alunos.
 
 ## EBNF
 
