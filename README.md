@@ -4,46 +4,49 @@ Alunos: Giovana Cassoni Andrade e Tales Ivalque Taveira de Freitas
 
 ## LINGUAGEM
 
-A linguagem de programação criada é para movimentar, abrir e fechar a garra de um robô.
+A linguagem de programação criada é para operar um robô, movimentando-o para frente, trás, lados, girando, abrindo e fechando a garra, movimentando o braço do robô, e visualizando diversas informações referentes a ele.
 
 ## EBNF
 
 - **PROGRAM**
-  - `PROGRAM ::= { DECLARACAO }`
+  - `PROGRAM ::= { FUNC_COMAND }`
+
+- **FUNC_COMAND**
+  - `FUNC_COMAND ::= VARIAVEIS_FUNC, ID, "(", [ VARIAVEIS, ID, { ",", VARIAVEIS, ID } ], ")", BLOCO`
+
+- **BLOCO**
+  - `BLOCO ::= ":", { DECLARACAO }, "FIM", ";"`
 
 - **DECLARACAO**
-  - `DECLARACAO ::= OBJETO_DECLARACAO | VARIAVEL_DECLARACAO | ATRIBUICAO | COMANDO | CONTROLE | COMENTARIO`
+  - `DECLARACAO ::= OBJETO_DECLARACAO | VARIAVEL_DECLARACAO | ATRIBUICAO | COMANDO | ENQUANTO | SE | COMENTARIO`
 
 - **OBJETO_DECLARACAO**
   - `OBJETO_DECLARACAO ::= "Robo", ID, "=", "Robo", "(", STRING, ")", ";"`
 
 - **VARIAVEL_DECLARACAO**
-  - `VARIAVEL_DECLARACAO ::= VARIAVEIS, ID, "=", EXPRESSAO, ";"`
+  - `VARIAVEL_DECLARACAO ::= VARIAVEIS, ID, { [ "=", EXPRESSAO ], { ",", ID } }, ";"`
+
+- **VARIAVEIS_FUNC**
+  - `VARIAVEIS_FUNC ::= "void" | "int" | "bool" | "str" | "comando"`
 
 - **VARIAVEIS**
-  - `VARIAVEIS ::= "void" | "int" | "bool" | "str"`
+  - `VARIAVEIS ::= "int" | "bool" | "str"`
 
 - **ATRIBUICAO**
-  - `ATRIBUICAO ::= ID, "=", EXPRESSAO, ";"`
+  - `ATRIBUICAO ::= ID, ( "=", EXPRESSAO, ";" | "(", [ EXPRESSAO, { ",", EXPRESSAO } ], ")", ";" )`
 
 - **COMANDO**
-  - `COMANDO ::= "movimentar", "(", ID, ",", EXPRESSAO, ")", ";"` 
-  - `| "mostrar", "(", EXPRESSAO, ")", ";"` 
-  - `| "abrir", "(", ID, ")", ";"` 
-  - `| "fechar", "(", ID, ",", EXPRESSAO, ")", ";"`
+  - `COMANDO ::= "mostrar", "(", EXPRESSAO, ")", ";"` 
   - `| "return", "(", EXPRESSAO, ")", ";"`
 
-- **CONTROLE**
-  - `CONTROLE ::= ENQUANTO | SE`
-
 - **SE**
-  - `SE ::= "SE", "(", EXPRESSAO, ")", ":", { DECLARACAO }, "FIM", ";", [ CONTRARIO ]`
+  - `SE ::= "SE", "(", EXPRESSAO, ")", BLOCO, [ SENAO ]`
 
-- **CONTRARIO**
-  - `CONTRARIO ::= "CONTRARIO", ":", { DECLARACAO }, "FIM", ";"`
+- **SENAO**
+  - `SENAO ::= "SENAO", BLOCO`
 
 - **ENQUANTO**
-  - `ENQUANTO ::= "ENQUANTO", "(", EXPRESSAO, ")", ":", { DECLARACAO }, "FIM", ";"`
+  - `ENQUANTO ::= "ENQUANTO", "(", EXPRESSAO, ")", BLOCO`
 
 - **EXPRESSAO**
   - `EXPRESSAO ::= EXP1, { ("==" | "<" | ">" | "<=" | ">=" | "!="), EXP1 }`
@@ -55,10 +58,10 @@ A linguagem de programação criada é para movimentar, abrir e fechar a garra d
   - `EXP2 ::= EXP3, { ("*" | "/" | "&&"), EXP3 }`
 
 - **EXP3**
-  - `EXP3 ::= [ "-" | "+" | "!"], ( NUMERO | STRING | "(", EXPRESSAO, ")" | ID, [ ARGUMENTOS ] )`
+  - `EXP3 ::= [ "-" | "+" | "!"], NUMERO | STRING | "(", EXPRESSAO, ")" | ( ID | METODOS_RESERVADOS ), [ "(", [ ARGUMENTOS ], ")" ]`
 
 - **ARGUMENTOS**
-  - `ARGUMENTOS ::= ",", EXPRESSAO, { ",", EXPRESSAO }`
+  - `ARGUMENTOS ::= EXPRESSAO, { ",", EXPRESSAO }`
 
 - **ID**
   - `ID ::= LETRA, { LETRA | DIGITO | "_" }`
@@ -92,40 +95,14 @@ A linguagem de programação criada é para movimentar, abrir e fechar a garra d
   - `           "\\" | ":" | ";" | "'" | "\"" | "," | "." | "/" |`
   - `           "<" | ">" | "?" | " " | "\t"`
 
+- **BOOLEANOS**
+  - `BOOLEANOS ::= "true" | "false"`
+
+- **METODOS_RESERVADOS**
+  - `METODOS_RESERVADOS ::= "move_frente" | "move_tras" | "move_esquerda" |`
+  - `"move_direita" | "gira" | "abre" | "fecha" | "sobe" | "desce" | "ver_x" |`
+  - `"ver_y" | "ver_angulo" | "ver_garra" | "ver_braco"`
+
 ## EXEMPLOS DE ENTRADA
 
-- entrada 1:
-
-```
-// Inicialização do robô
-Robo rob1 = Robo("rob1");
-
-// Declaração de variável
-int contador = 3;
-
-// Loop para movimentar o robô
-ENQUANTO (contador > 0):
-    rob1.movimentar(10);
-    contador = contador - 1;
-FIM;
-
-// Mostrar o valor de contador
-mostrar(contador);
-```
-
-- entrada 2:
-
-```
-// Inicialização do robô
-Robo rob1 = Robo("rob1");
-
-// Declaração de variável
-int contador = 3;
-
-// Loop para movimentar o robô
-ENQUANTO (contador > 0):
-    movimentar(rob1, 10);
-    contador = contador - 1;
-    mostrar(contador);
-FIM;
-```
+Os exemplos de entrada podem ser vistos na pasta "testes".
