@@ -12,5 +12,6 @@ void main():
     ver_x(robo1);
     ver_y(robo1);
     ver_angulo(robo1);
+    mostrar(ver_x(robo1));
     mostrar(ver_y(robo1));
     FIM;

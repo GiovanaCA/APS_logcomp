@@ -165,7 +165,3 @@ class Tokenizer:
 
         else:
             raise ValueError(f"Caractere inválido: '{current_char}'")
-
-        # Debug: Exibir o token atual (opcional)
-        # print(f"Token: {self.next.type}, Valor: {self.next.value}")
-

@@ -29,8 +29,6 @@ class DeclaraRobo(Node):
         
         # Registra a variável na SymbolTable
         table.set(var_name, novo_robo, "Robo")
-        
-        print(f"Robô '{robo_name}' declarado como variável '{var_name}'.")
         return 0, "int"
 
 
@@ -70,8 +68,6 @@ class FuncDec(Node):
             'params': params,
             'block': block
         })
-        
-        print(f"Função '{func_name}' do tipo '{func_type}' declarada com sucesso.")
         return 0, "int"
 
 
