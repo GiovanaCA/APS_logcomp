@@ -7,7 +7,7 @@ from symbols import (
     PRIORITIES,
     RESERVED_WORDS,
     TYPES,
-    BOOLEAN_VALUES
+    BOOLEAN_VALUES,
 )
 
 class Tokenizer:
@@ -91,6 +91,7 @@ class Tokenizer:
             while self.position < len(self.source) and (self.source[self.position].isalnum() or self.source[self.position] == "_"):
                 value += self.source[self.position]
                 self.position += 1
+            
             if value in RESERVED_WORDS:
                 self.next = Token(RESERVED_WORDS[value], value)
             elif value in TYPES:
@@ -140,7 +141,7 @@ class Tokenizer:
         elif current_char == ')':
             self.position += 1
             self.next = Token("PRIORITY", ")")
-
+            
         else:
             raise ValueError(f"Caractere inválido: '{current_char}'")
 

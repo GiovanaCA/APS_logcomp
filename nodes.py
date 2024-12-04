@@ -1,15 +1,37 @@
 from typing import List, Any
-from schemas import SymbolTable, Node, FuncTable
+from schemas import SymbolTable, Node, FuncTable, RobotTable, Robo
+from symbols import RESERVED_METHODS
+
+class DeclaraRobo(Node):
+    def evaluate(self, table: SymbolTable) -> Any:
+        robot_name = self.value
+        
+        name, type = self.children[0].evaluate(table)
+        
+        if type != "str":
+            raise ValueError("Erro: Nome do robô deve ser uma string")
+        
+        elif RobotTable.contains(robot_name):
+            raise ValueError(f"Erro: Robô '{robot_name}' já declarado")
+        
+        novo_robo = Robo(name)
+        
+        RobotTable.set(robot_name, novo_robo)
+
+        return 0, "int"
 
 
 class FuncDec(Node):
-    def evaluate(self, table: FuncTable = FuncTable) -> Any:
+    def evaluate(self) -> Any:
         func_name = self.value
+        if func_name in RESERVED_METHODS:
+            raise ValueError(f"Erro: Função '{func_name}' é um método não sobrescritível")
         if FuncTable.contains(func_name):
             raise ValueError(f"Erro: Função '{func_name}' já declarada")
         FuncTable.set(func_name, self)
         return 0, "int"
-    
+
+
 class FuncCall(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         func_name = self.value
@@ -18,19 +40,25 @@ class FuncCall(Node):
         func_node = FuncTable.get(func_name)
         params = func_node.children
         local_table = SymbolTable()
+        
         # Verifica se a quantidade de argumentos é compatível
-        if len(self.children) != len(params)-2:
+        if len(self.children) != len(params) - 2:
             raise ValueError(f"Erro: Número de argumentos inválido para a função '{func_name}'")
+        
         # Avalia os argumentos e os atribui à tabela de símbolos local
         for arg_node, param_node in zip(self.children, params[1:-1]):
             arg_value, arg_type = arg_node.evaluate(table)
             param_name = param_node.children[0].value
             param_type = param_node.value
+            
             if arg_type != param_type:
                 raise TypeError(f"Erro: Tipo de argumento inválido para a função '{func_name}'")
+            
             local_table.set(param_name, arg_value, arg_type)
+        
         # Avalia o bloco de código da função
         return func_node.children[-1].evaluate(local_table)
+
 
 class BlockNode(Node):
     def evaluate(self, table: SymbolTable) -> Any:
@@ -39,6 +67,7 @@ class BlockNode(Node):
             a, b = child.evaluate(table)
             result += a
         return result, "int"
+
 
 class BinOp(Node):
     def evaluate(self, table: SymbolTable) -> Any:
@@ -52,7 +81,7 @@ class BinOp(Node):
             op1_value = 1 if bool(op1_value) else 0
         if op2_type == "bool":
             op2_value = 1 if bool(op2_value) else 0
-        
+
         if self.value == "+" and op1_type != "str" and op2_type != "str":
             return int(op1_value + op2_value), "int"
         elif self.value == "+" and (op1_type == "str" or op2_type == "str"):
@@ -94,16 +123,20 @@ class BinOp(Node):
         else:
             raise TypeError(f"Operação inválida para o tipo {op1_type}")
 
+
 class UnOp(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         value, value_type = self.children[0].evaluate(table)
+        
         # Mapeia booleanos para inteiros
         if value_type == "bool":
             value = 1 if value else 0
             value_type = "int"
+        
         # Operador Unário de Negação (-)
         if self.value == "-":
             return -value, "int"
+        
         # Operador Unário Lógico NOT (!)
         elif self.value == "!":
             if value_type == "str":
@@ -111,35 +144,44 @@ class UnOp(Node):
             return (0 if value != 0 else 1), "int"  # Mapeia para 0 ou 1
         else:
             raise ValueError(f"Operador unário desconhecido: {self.value}")
-        
+
+
 class IntVal(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         return self.value, "int"  # Retorna o valor e o tipo
+
 
 class StrVal(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         return self.value, "str"  # Retorna o valor e o tipo
 
+
 class NoOp(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         return 0, "int"
+
 
 class Assign(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         var_name = self.value  # Nome da variável
         if len(self.children) == 0:
             return 0, "int"
+        
         var_value, value_type = self.children[0].evaluate(table)  # Avalia a expressão
+        
         # Verifica se a variável foi declarada
         if not table.contains(var_name):
             raise ValueError(f"Erro: Variável '{var_name}' não foi declarada")
+        
         # Verifica se o tipo do valor é compatível com o tipo da variável
         var_type = table.get_type(var_name)
         if var_type != value_type:
             raise TypeError(f"Erro: Tentativa de atribuir tipo '{value_type}' à variável '{var_name}' de tipo '{var_type}'")
+        
         # Atualiza o valor da variável na tabela de símbolos
         table.set(var_name, var_value, var_type)
         return 0, "int"
+
 
 class Id(Node):
     def evaluate(self, table: SymbolTable) -> Any:
@@ -147,13 +189,15 @@ class Id(Node):
             return table.get(self.value), table.get_type(self.value)
         else:
             raise ValueError(f"Erro: Variável '{self.value}' não declarada")
-        
+
+
 class MostrarNode(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         value, value_type = self.children[0].evaluate(table)
         print(value)
         return 0, "int"
-        
+
+
 class SeNode(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         condition_value, condition_type = self.children[0].evaluate(table)
@@ -164,13 +208,15 @@ class SeNode(Node):
         else:
             return self.children[2].evaluate(table)
 
+
 class EnquantoNode(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         result = 0
         while self.children[0].evaluate(table)[0]:
             result += self.children[1].evaluate(table)[0]
         return result, "int"
-    
+
+
 class VarDec(Node):
     def evaluate(self, table: SymbolTable) -> Any:
         var_type = self.value
@@ -179,19 +225,9 @@ class VarDec(Node):
             if table.contains(var_name):
                 raise ValueError(f"Erro: Variável '{var_name}' já declarada")
             table.set(var_name, None, var_type)
+        
         # Avalia as atribuições associadas às declarações
         for child in self.children:
             child.evaluate(table)
+        
         return 0, "int"
-
-class AbrirNode(Node):
-    def evaluate(self, table: SymbolTable) -> Any:
-        return None
-
-class FecharNode(Node):
-    def evaluate(self, table: SymbolTable) -> Any:
-        return None
-
-class MovimentarNode(Node):
-    def evaluate(self, table: SymbolTable) -> Any:
-        return None

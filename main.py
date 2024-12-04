@@ -2,6 +2,7 @@ import sys
 from typing import List, Any
 from schemas import SymbolTable, Node, Token, FuncTable
 from nodes import BlockNode, BinOp, UnOp, IntVal, NoOp, Assign, Id, MostrarNode
+from tokenizer import Tokenizer
 
 from parser import Parser
 class SemanticAnalyzer:

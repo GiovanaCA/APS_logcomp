@@ -8,7 +8,7 @@ void main():
 
     // Loop para movimentar o robô
     ENQUANTO (contador > 0):
-        // rob1.movimentar(10);
+        move_frente(rob1, 10);
         contador = contador - 1;
     FIM;
 

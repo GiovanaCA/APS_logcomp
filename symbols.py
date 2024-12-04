@@ -8,14 +8,12 @@ SYMBOLS = ['=', ';', ':']
 PRIORITIES = ['(', ')']
 RESERVED_WORDS = {
     'mostrar': 'MOSTRAR',
-    'movimentar': 'MOVIMENTAR',
-    'abrir': 'ABRIR',
-    'fechar': 'FECHAR',
     'SE': 'SE',
-    'CONTRARIO': 'CONTRARIO',
+    'SENAO': 'SENAO',
     'ENQUANTO': 'ENQUANTO',
     'FIM': 'FIM',
     'return': 'RETURN',
 }
-TYPES = ['str', 'bool', 'int', 'void', 'Robo']
+RESERVED_METHODS = ['move_frente', 'move_tras', 'move_esquerda', 'move_direita', 'gira', 'abre', 'fecha', 'sobe', 'desce', 'ver_x', 'ver_y', 'ver_angulo', 'ver_garra', 'ver_braço']
+TYPES = ['str', 'bool', 'int', 'void', 'Robo', 'comando']
 BOOLEAN_VALUES = ['true', 'false']
