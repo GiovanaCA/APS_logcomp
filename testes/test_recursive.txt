@@ -1,0 +1,15 @@
+// teste recursivo
+int soma(int a, int b):
+    SE (a == 0):
+        return(b);
+        FIM;
+    SENAO:
+        return(soma(a - 1, b + 1));
+        FIM;
+    FIM;
+
+int main():
+    int x = 5;
+    int y = 10;
+    mostrar(soma(x, y));
+    FIM;

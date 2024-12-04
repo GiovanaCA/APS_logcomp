@@ -1,0 +1,7 @@
+int main():
+    int x = 0;
+    ENQUANTO(x < 10):
+        mostrar(x);
+        x = x + 1;
+        FIM;
+    FIM;
