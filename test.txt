@@ -1,9 +1,16 @@
+int soma(int a, int b):
+    return(a + b);
+FIM;
+
 int main():
     Robo robo1 = Robo("RoboAlpha");
-    move_frente(robo1, 10);
+    int x = 10;
+    int y = soma(x, 20);
+    move_frente(robo1, y);
     gira(robo1, 90);
     abre(robo1);
     ver_x(robo1);
     ver_y(robo1);
     ver_angulo(robo1);
-    FIM;
+    mostrar(ver_y(robo1));
+FIM;
