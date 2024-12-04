@@ -125,30 +125,6 @@ class FuncTable:
     @staticmethod
     def __str__():
         return str(FuncTable.functions)
-    
-class RobotTable:
-    robots = {}
-
-    @staticmethod
-    def set(robot_name: str, robot_node: Any):
-        if robot_name in RobotTable.robots:
-            raise ValueError(f"Erro: Robô '{robot_name}' já declarado.")
-        RobotTable.robots[robot_name] = robot_node
-
-    @staticmethod
-    def get(robot_name: str) -> Any:
-        if robot_name not in RobotTable.robots:
-            raise ValueError(f"Erro: Robô '{robot_name}' não declarado.")
-        return RobotTable.robots[robot_name]
-
-    @staticmethod
-    def contains(robot_name: str) -> bool:
-        return robot_name in RobotTable.robots
-    
-
-    @staticmethod
-    def __str__():
-        return str(RobotTable.robots)
 
 class Node(ABC):
     def __init__(self, value: Any, children : List['Node'] = None):

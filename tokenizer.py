@@ -23,13 +23,22 @@ class Tokenizer:
 
         current_char = self.source[self.position]
 
-        # Pula espaços em branco
-        while current_char.isspace():
-            self.position += 1
-            if self.position >= len(self.source):
-                self.next = Token("EOF", None)
-                return
-            current_char = self.source[self.position]
+        # Pula espaços em branco e comentários
+        while current_char.isspace() or current_char == '#':
+            if current_char == '#':
+                # Pula até o final da linha para ignorar comentários
+                while self.position < len(self.source) and self.source[self.position] != '\n':
+                    self.position += 1
+                if self.position >= len(self.source):
+                    self.next = Token("EOF", None)
+                    return
+                current_char = self.source[self.position]
+            else:
+                self.position += 1
+                if self.position >= len(self.source):
+                    self.next = Token("EOF", None)
+                    return
+                current_char = self.source[self.position]
 
         # Número
         if current_char.isdigit():
@@ -40,14 +49,14 @@ class Tokenizer:
             self.next = Token("NUMBER", value)
 
         # Operadores Lógicos
-        elif any(current_char == op[0] for op in LOGICAL_OPERATORS):
+        elif any(self.source.startswith(op, self.position) for op in LOGICAL_OPERATORS):
             if self.source.startswith('&&', self.position):
                 self.next = Token("LOGICAL_OPERATOR", '&&')
                 self.position += 2
             elif self.source.startswith('||', self.position):
                 self.next = Token("LOGICAL_OPERATOR", '||')
                 self.position += 2
-            elif current_char == '!':
+            elif self.source.startswith('!', self.position):
                 self.next = Token("LOGICAL_OPERATOR", '!')
                 self.position += 1
             else:
@@ -60,23 +69,15 @@ class Tokenizer:
             self.next = token
 
         # Operadores Relacionais
-        elif current_char in RELATIONAL_OPERATORS:
-            if self.source.startswith('<=', self.position):
-                self.next = Token("RELATIONAL_OPERATOR", '<=')
-                self.position += 2
-            elif self.source.startswith('>=', self.position):
-                self.next = Token("RELATIONAL_OPERATOR", '>=')
-                self.position += 2
-            elif self.source.startswith('==', self.position):
-                self.next = Token("RELATIONAL_OPERATOR", '==')
-                self.position += 2
-            elif self.source.startswith('!=', self.position):
-                self.next = Token("RELATIONAL_OPERATOR", '!=')
-                self.position += 2
-            elif current_char in ['<', '>']:
-                self.next = Token("RELATIONAL_OPERATOR", current_char)
-                self.position += 1
-            else:
+        elif any(self.source.startswith(op, self.position) for op in RELATIONAL_OPERATORS):
+            matched = False
+            for op in sorted(RELATIONAL_OPERATORS, key=lambda x: -len(x)):  # Ordena por comprimento decrescente
+                if self.source.startswith(op, self.position):
+                    self.next = Token("RELATIONAL_OPERATOR", op)
+                    self.position += len(op)
+                    matched = True
+                    break
+            if not matched:
                 raise ValueError(f"Operador relacional inválido em posição {self.position}: '{current_char}'")
 
         # Prioridades
@@ -91,9 +92,11 @@ class Tokenizer:
             while self.position < len(self.source) and (self.source[self.position].isalnum() or self.source[self.position] == "_"):
                 value += self.source[self.position]
                 self.position += 1
-            
+
+            # Verifica se é uma palavra reservada
             if value in RESERVED_WORDS:
-                self.next = Token(RESERVED_WORDS[value], value)
+                token_type = RESERVED_WORDS[value]
+                self.next = Token(token_type, value)
             elif value in TYPES:
                 self.next = Token("TYPE", value)
             elif value in BOOLEAN_VALUES:
@@ -106,8 +109,26 @@ class Tokenizer:
             value = ""
             self.position += 1  # Pula a aspa inicial
             while self.position < len(self.source) and self.source[self.position] != '"':
-                value += self.source[self.position]
-                self.position += 1
+                if self.source[self.position] == '\\':  # Tratamento de caracteres de escape
+                    self.position += 1
+                    if self.position < len(self.source):
+                        esc_char = self.source[self.position]
+                        if esc_char == 'n':
+                            value += '\n'
+                        elif esc_char == 't':
+                            value += '\t'
+                        elif esc_char == '"':
+                            value += '"'
+                        elif esc_char == '\\':
+                            value += '\\'
+                        else:
+                            value += esc_char
+                        self.position += 1
+                    else:
+                        raise ValueError("String não fechada corretamente após escape.")
+                else:
+                    value += self.source[self.position]
+                    self.position += 1
             if self.position >= len(self.source):
                 raise ValueError("String não fechada.")
             self.position += 1  # Pula a aspa final
@@ -123,27 +144,28 @@ class Tokenizer:
                 self.position += 1
 
         elif current_char == ';':
-            self.position += 1
             self.next = Token("EOL", ";")
+            self.position += 1
 
         elif current_char == ':':
-            self.position += 1
             self.next = Token("COLON", ":")
+            self.position += 1
 
         elif current_char == ',':
-            self.position += 1
             self.next = Token("COMMA", ",")
+            self.position += 1
 
         elif current_char == '(':
-            self.position += 1
             self.next = Token("PRIORITY", "(")
+            self.position += 1
 
         elif current_char == ')':
-            self.position += 1
             self.next = Token("PRIORITY", ")")
-            
+            self.position += 1
+
         else:
             raise ValueError(f"Caractere inválido: '{current_char}'")
 
         # Debug: Exibir o token atual (opcional)
         # print(f"Token: {self.next.type}, Valor: {self.next.value}")
+

@@ -5,20 +5,12 @@ from nodes import BlockNode, BinOp, UnOp, IntVal, NoOp, Assign, Id, MostrarNode
 from tokenizer import Tokenizer
 
 from parser import Parser
-class SemanticAnalyzer:
-    @staticmethod
-    def run(node: Node) -> Any:
-        if isinstance(node, BinOp):
-            for child in node.children:
-                SemanticAnalyzer.run(child)
-        elif isinstance(node, UnOp):
-            SemanticAnalyzer.run(node.children[0])
-        elif isinstance(node, IntVal):
-            pass
-        elif isinstance(node, NoOp):
-            pass
-        else:
-            raise ValueError(f"Tipo de nó inválido: {type(node)}")
+
+from symbols import RESERVED_METHODS
+
+# Registro das funções reservadas no FuncTable
+for method_name, method_info in RESERVED_METHODS.items():
+    FuncTable.set(method_name, method_info)
 
 def main(args):
     parser = Parser()

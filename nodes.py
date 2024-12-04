@@ -4,31 +4,74 @@ from symbols import RESERVED_METHODS
 
 class DeclaraRobo(Node):
     def evaluate(self, table: SymbolTable) -> Any:
-        robot_name = self.value
+        var_name = self.value  # Nome da variável, por exemplo, 'robo1'
         
-        name, type = self.children[0].evaluate(table)
+        # Avalia o nome do robô, que deve ser uma string
+        robo_name, robo_type = self.children[0].evaluate(table)  # Ex: ('RoboAlpha', 'str')
         
-        if type != "str":
+        # Verifica se o tipo do nome do robô é 'str'
+        if robo_type != "str":
             raise ValueError("Erro: Nome do robô deve ser uma string")
         
-        elif RobotTable.contains(robot_name):
-            raise ValueError(f"Erro: Robô '{robot_name}' já declarado")
+        # Verifica se o nome do robô já está na RobotTable
+        if RobotTable.contains(robo_name):
+            raise ValueError(f"Erro: Robô '{robo_name}' já declarado")
         
-        novo_robo = Robo(name)
+        # Verifica se o nome da variável já está na SymbolTable
+        if table.contains(var_name):
+            raise ValueError(f"Erro: Variável '{var_name}' já declarada")
         
-        RobotTable.set(robot_name, novo_robo)
-
+        # Cria uma nova instância de Robo
+        novo_robo = Robo(robo_name)
+        
+        # Registra o robô na RobotTable
+        RobotTable.set(robo_name, novo_robo)
+        
+        # Registra a variável na SymbolTable
+        table.set(var_name, novo_robo, "Robo")
+        
+        print(f"Robô '{robo_name}' declarado como variável '{var_name}'.")
         return 0, "int"
 
 
+# nodes.py
+
 class FuncDec(Node):
-    def evaluate(self) -> Any:
+    def evaluate(self, table: SymbolTable) -> Any:
         func_name = self.value
+        
+        # Extrai func_type do primeiro filho (StrVal)
+        func_type_node = self.children[0]
+        func_type = func_type_node.value  # 'int', 'comando', etc.
+        
+        # Verifica se o nome da função é um método reservado
         if func_name in RESERVED_METHODS:
-            raise ValueError(f"Erro: Função '{func_name}' é um método não sobrescritível")
+            raise ValueError(f"Erro: Função '{func_name}' é um método reservado e não pode ser redefinida")
+        
+        # Verifica se a função já foi declarada
         if FuncTable.contains(func_name):
             raise ValueError(f"Erro: Função '{func_name}' já declarada")
-        FuncTable.set(func_name, self)
+        
+        # Coleta os parâmetros da função
+        params = []
+        for child in self.children[1:-1]:  # Exclui func_type e bloco
+            if isinstance(child, VarDec):
+                for var in child.children:
+                    var_name = var.value  # Nome da variável
+                    var_type = child.value  # Tipo da variável
+                    params.append((var_name, var_type))
+        
+        # Obtém o bloco de código da função
+        block = self.children[-1]
+        
+        # Registra a função na FuncTable
+        FuncTable.set(func_name, {
+            'type': func_type,
+            'params': params,
+            'block': block
+        })
+        
+        print(f"Função '{func_name}' do tipo '{func_type}' declarada com sucesso.")
         return 0, "int"
 
 
@@ -37,27 +80,54 @@ class FuncCall(Node):
         func_name = self.value
         if not FuncTable.contains(func_name):
             raise ValueError(f"Erro: Função '{func_name}' não declarada")
-        func_node = FuncTable.get(func_name)
-        params = func_node.children
-        local_table = SymbolTable()
         
-        # Verifica se a quantidade de argumentos é compatível
-        if len(self.children) != len(params) - 2:
-            raise ValueError(f"Erro: Número de argumentos inválido para a função '{func_name}'")
+        func_entry = FuncTable.get(func_name)
         
-        # Avalia os argumentos e os atribui à tabela de símbolos local
-        for arg_node, param_node in zip(self.children, params[1:-1]):
-            arg_value, arg_type = arg_node.evaluate(table)
-            param_name = param_node.children[0].value
-            param_type = param_node.value
+        # Verifica se é um método reservado
+        if func_name in RESERVED_METHODS:
+            method_info = RESERVED_METHODS[func_name]
+            expected_arg_types = method_info["arg_types"]
             
-            if arg_type != param_type:
-                raise TypeError(f"Erro: Tipo de argumento inválido para a função '{func_name}'")
+            # Verifica se a quantidade de argumentos é compatível
+            if len(self.children) < len(expected_arg_types):
+                raise ValueError(f"Erro: Função '{func_name}' requer pelo menos {len(expected_arg_types)} argumentos")
             
-            local_table.set(param_name, arg_value, arg_type)
+            # Avalia os argumentos
+            args = []
+            for i, expected_type in enumerate(expected_arg_types):
+                if i >= len(self.children):
+                    break
+                arg_node = self.children[i]
+                arg_value, arg_type = arg_node.evaluate(table)
+                if arg_type != expected_type:
+                    raise TypeError(f"Erro: Argumento {i+1} da função '{func_name}' deve ser do tipo '{expected_type}', mas foi '{arg_type}'")
+                args.append(arg_value)
+            
+            # Chama a implementação reservada com os argumentos
+            result = method_info["implementation"](*args)
+            return result, "int"  # Retorna o valor retornado pela implementação reservada e o tipo
         
-        # Avalia o bloco de código da função
-        return func_node.children[-1].evaluate(local_table)
+        else:
+            # Função definida pelo usuário
+            func_node = func_entry
+            params = func_node['params']
+            block = func_node['block']
+            func_type = func_node['type']
+            
+            # Verifica se a quantidade de argumentos é compatível
+            if len(self.children) != len(params):
+                raise ValueError(f"Erro: Número de argumentos inválido para a função '{func_name}'")
+            
+            # Avalia os argumentos e os atribui à tabela de símbolos local
+            local_table = SymbolTable()
+            for arg_node, (param_name, param_type) in zip(self.children, params):
+                arg_value, arg_type = arg_node.evaluate(table)
+                if arg_type != param_type:
+                    raise TypeError(f"Erro: Tipo de argumento inválido para a função '{func_name}' no parâmetro '{param_name}'")
+                local_table.set(param_name, arg_value, param_type)
+            
+            # Avalia o bloco de código da função
+            return block.evaluate(local_table)
 
 
 class BlockNode(Node):

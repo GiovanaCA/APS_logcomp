@@ -1,7 +1,8 @@
 from tokenizer import Tokenizer
 from nodes import BlockNode, BinOp, UnOp, IntVal, NoOp, Assign, Id, MostrarNode, SeNode, EnquantoNode, VarDec, StrVal, FuncCall, FuncDec, DeclaraRobo
 from preprocessor import PrePro
-from symbols import RESERVED_WORDS
+from symbols import RESERVED_WORDS, RESERVED_METHODS
+from schemas import FuncTable
 
 class Parser:
     tokenizer = None
@@ -13,62 +14,100 @@ class Parser:
         '''
         program = BlockNode("Programa")
         while Parser.tokenizer.next.type != "EOF":
-            if Parser.tokenizer.next.type != "TYPE":
-                raise ValueError("Esperado tipo de retorno da função")
-            else:
+            if Parser.tokenizer.next.type == "COMANDO":
+                comando_dec = Parser.parseFunction(is_comando=True)
+                program.children.append(comando_dec)
+            elif Parser.tokenizer.next.type == "TYPE":
                 func_dec = Parser.parseFunction()
                 program.children.append(func_dec)
-        program.children.append(FuncCall('main'))
-        return program
-    
-    @staticmethod
-    def parseFunction():
-        func_type = Parser.tokenizer.next.value
-        Parser.tokenizer.select_next()
-        parameters = []
-        if Parser.tokenizer.next.type == "ID":
-            func_name = Parser.tokenizer.next.value
-            new_func = Assign(func_name, None)
-            parameters.append(VarDec(func_type, [new_func]))
-            Parser.tokenizer.select_next()
-            if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
-                
-                Parser.tokenizer.select_next()
-                if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")":
-                    Parser.tokenizer.select_next()
-                else:    
-                    while Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
-                        if Parser.tokenizer.next.type == "TYPE":
-                            var_type = Parser.tokenizer.next.value
-                            Parser.tokenizer.select_next()
-                            if Parser.tokenizer.next.type == "ID":
-                                var_name = Parser.tokenizer.next.value
-                                new_var = Assign(var_name, None)
-                                parameters.append(VarDec(var_type, [new_var]))
-                                Parser.tokenizer.select_next()
-                                if Parser.tokenizer.next.type == "COMMA":
-                                    Parser.tokenizer.select_next()
-                                elif Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")":
-                                    Parser.tokenizer.select_next()
-                                    break
-                                else:
-                                    raise ValueError("Erro de sintaxe na declaração dos parâmetros da função")
-                            else:
-                                raise ValueError("Erro de sintaxe na declaração de função")
-                        else:
-                            raise ValueError("Erro de sintaxe na declaração de função")
-                        
-                if Parser.tokenizer.next.type == "COLON":
-                    block = Parser.parseBlock()
-                    parameters.append(block)
-
-                else:
-                    raise ValueError("Erro de sintaxe na declaração de função")
-                
-                return FuncDec(func_name, parameters)
-    
             else:
-                raise ValueError("Erro de sintaxe na declaração de função")
+                raise ValueError("Esperado tipo de retorno da função ou 'COMANDO'")
+            
+        program.children.append(FuncCall('main'))
+        
+        return program
+
+    @staticmethod
+    def parseFunction(is_comando=False):
+        '''
+        Parseia a declaração de uma função comum ou 'comando' e retorna um nó FuncDec
+        '''
+        func_type = "comando" if is_comando else Parser.tokenizer.next.value
+        if is_comando:
+            Parser.tokenizer.select_next()  # Consome 'COMANDO'
+        else:
+            Parser.tokenizer.select_next()  # Consome o tipo da função
+
+        if Parser.tokenizer.next.type != "ID":
+            raise ValueError("Erro de sintaxe na declaração de função: Esperado nome da função")
+        
+        func_name = Parser.tokenizer.next.value
+        Parser.tokenizer.select_next()
+        
+        # Verifica se o nome da função é um método reservado
+        if func_name in RESERVED_METHODS:
+            raise ValueError(f"Erro: Função '{func_name}' é um método reservado e não pode ser redefinida")
+        
+        if FuncTable.contains(func_name):
+            raise ValueError(f"Erro: Função '{func_name}' já declarada")
+        
+        # Verifica se a próxima parte é '('
+        if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
+            Parser.tokenizer.select_next()
+            parameters = []
+            param_types = []
+            if not (Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")"):
+                while True:
+                    if Parser.tokenizer.next.type != "TYPE":
+                        raise ValueError("Erro de sintaxe na declaração dos parâmetros da função: Esperado tipo")
+                    param_type = Parser.tokenizer.next.value
+                    Parser.tokenizer.select_next()
+                    
+                    if Parser.tokenizer.next.type != "ID":
+                        raise ValueError("Erro de sintaxe na declaração dos parâmetros da função: Esperado nome do parâmetro")
+                    param_name = Parser.tokenizer.next.value
+                    Parser.tokenizer.select_next()
+                    
+                    # Adiciona o parâmetro à lista
+                    parameters.append(VarDec(param_type, [Assign(param_name, None)]))
+                    param_types.append(param_type)
+                    
+                    if Parser.tokenizer.next.type == "COMMA":
+                        Parser.tokenizer.select_next()
+                    elif Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")":
+                        break
+                    else:
+                        raise ValueError("Erro de sintaxe na declaração dos parâmetros da função: Esperado ',' ou ')'")
+        
+            # Fecha o parêntese
+            if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == ")":
+                Parser.tokenizer.select_next()
+            else:
+                raise ValueError("Erro de sintaxe na declaração de função: Esperado ')' após parâmetros")
+            
+            # Verifica se é uma função 'comando' e aplica regras específicas
+            if is_comando:
+                # A função 'comando' deve ter pelo menos um parâmetro do tipo 'Robo'
+                if len(param_types) == 0 or param_types[0] != "Robo":
+                    raise ValueError("Erro: Função 'comando' deve receber pelo menos um argumento do tipo 'Robo'")
+            else:
+                # Para funções comuns, pode adicionar outras verificações se necessário
+                pass
+            
+            # Espera um ':' antes do bloco de código
+            if Parser.tokenizer.next.type == "COLON":
+                block = Parser.parseBlock()
+                # Inclui func_type como primeiro filho do FuncDec
+                # Parâmetros já foram adicionados
+                parameters_with_block = [StrVal(func_type)] + parameters + [block]
+            else:
+                raise ValueError("Erro de sintaxe na declaração de função: Esperado ':' após parâmetros")
+            
+            # Cria o nó de declaração de função
+            return FuncDec(func_name, parameters_with_block)
+        
+        else:
+            raise ValueError("Erro de sintaxe na declaração de função: Esperado '(' após nome da função")
 
     @staticmethod
     def parseBlock():
@@ -205,9 +244,9 @@ class Parser:
                         if Parser.tokenizer.next.type == "PRIORITY" and Parser.tokenizer.next.value == "(":
                             Parser.tokenizer.select_next()
                             name = Parser.parseExpressao()                        
-                            Parser.tokenizer.select_next()
                             if Parser.tokenizer.next.type != "PRIORITY" or Parser.tokenizer.next.value != ")":
                                 raise ValueError("Parênteses não fechados")
+                            Parser.tokenizer.select_next()
                         else:
                             raise ValueError("Erro de sintaxe: Robô não inicializado ou inicializado incorretamente")
 
