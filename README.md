@@ -103,6 +103,39 @@ A linguagem de programação criada é para operar um robô, movimentando-o para
   - `"move_direita" | "gira" | "abre" | "fecha" | "sobe" | "desce" | "ver_x" |`
   - `"ver_y" | "ver_angulo" | "ver_garra" | "ver_braco"`
 
+## Mudanças na linguagem
+
+- **Declaração de objetos**
+  - `Robo nome_var = Robo("Nome do Robô");`
+  A ideia aqui é criar uma variável para representar o robô, e inicializá-la com um nome único. Para o usuário, a implementação é transparente, mas para o compilador, a variável é tratada como um objeto.
+
+- **Métodos reservados**
+  - `move_frente(Robo rob1, int i);`
+  - `move_tras(Robo rob1, int i);`
+  - `move_esquerda(Robo rob1, int i);`
+  - `move_direita(Robo rob1, int i);`
+  - `gira(Robo rob1, int i);`
+  - `abre(Robo rob1);`
+  - `fecha(Robo rob1);`
+  - `sobe(Robo rob1);`
+  - `desce(Robo rob1);`
+  - `ver_x(Robo rob1);`
+  - `ver_y(Robo rob1);`
+  - `ver_angulo(Robo rob1);`
+  - `ver_garra(Robo rob1);`
+  - `ver_braco(Robo rob1);`
+
+  Esses métodos são os comandos básicos que o robô pode executar. Eles são chamados dentro de funções do tipo "comando" e são responsáveis por movimentar o robô, abrir e fechar a garra, subir e descer o braço, e visualizar informações sobre o robô.
+
+- **Declaração de comandos**
+  - `girar(expressão);`
+  - `comando expr(Robo rob1, int a);`
+  Como estamos criado uma linguagem para operar um robô, é elementar que seja possível criar comando específicos para realizar as mais diversas ações com menos linhas de código. Para isso, foi craido o tipo de função "comando", que deve receber um objeto do tipo Robo e possivelmente outros argumentos, e executa uma ação específica, derivada de uma sequência de outros comandos.
+  Exemplo [test_comando](testes/test_comando.txt)
+
+- **Linguagem clara**
+  O nome dos comandos e funções foram escolhidos de forma a serem intuitivos, facilitando o entendimento do código, além das regras de construção da sintaxe, que não possui regras rígidas como identação, por exemplo.
+
 ## EXEMPLOS DE ENTRADA
 
 Os exemplos de entrada podem ser vistos na pasta "testes".
